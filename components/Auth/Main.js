@@ -52,18 +52,31 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 const Stack = createNativeStackNavigator();
 import LoginScreen from "./Login";
-import SuperuserLoginScreen from "./superuserLogin";
+import StudenthomeScreen from "../Student/home";
+import TimetableviewScreen from "../Student/Timetableview";
+import NoticeScreen from "../Student/Notice";
+import { auth } from "../../firebase";
 
 function HomeScreen({ navigation }) {
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        navigation.replace("Home", user);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
   return (
     <>
       <View style={styles.container}>
         <Text style={styles.Title}>Select Role</Text>
         <Text style={styles.paragraph}>Select your role in this app </Text>
         {[
-          { name: "Admin (Superuser)", path: "SuperuserLogin" },
-          { name: "User (Teachers)", path: "Login" },
-          { name: "Xerox", path: "" },
+          { name: "Admin (Teachers)", path: "Login" },
+          { name: "Timetable (Student)", path: "Timetableview" },
+          { name: "Notice (Student)", path: "Notice" },
         ].map((i) => (
           <Div
             h="10%"
@@ -127,10 +140,13 @@ export default function ({ navigation }) {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="SuperuserLogin"
-        component={SuperuserLoginScreen}
-        options={{ headerShown: false }}
+        name="Timetableview"
+        component={TimetableviewScreen}
+        options={{
+          title: "Timetable",
+        }}
       />
+      <Stack.Screen name="Notice" component={NoticeScreen} />
     </Stack.Navigator>
   );
 }

@@ -191,7 +191,16 @@ function HomeScreen({ route, navigation }) {
                 </Button>
               </Div>
               <Div m="lg" row>
-                <Button bg="#cbd5e0" h={33} w={33} rounded="circle" p={0}>
+                <Button
+                  bg="#cbd5e0"
+                  h={33}
+                  w={33}
+                  rounded="circle"
+                  p={0}
+                  onPress={() => {
+                    navigation.navigate("View", i);
+                  }}
+                >
                   <MaterialCommunityIcons
                     name="circle-edit-outline"
                     size={19}
@@ -1243,10 +1252,7 @@ function UpdateScreen({ route, navigation }) {
             prefix={<Feather name="users" size={20} color="#38b2ac" />}
             //onPress={UpdateData}
             onPress={() => {
-              navigation.navigate("View", {
-                screen: "StudentS",
-                id: route.params.id,
-              });
+              navigation.navigate("View", route.params);
             }}
           >
             <Text fontWeight="bold" color="#38b2ac">

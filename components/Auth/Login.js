@@ -73,6 +73,7 @@ function SignupScreen({ navigation }) {
   const [username, setusername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [Accesskey, setAccesskey] = useState("");
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -194,11 +195,37 @@ function SignupScreen({ navigation }) {
             style={styles.input}
             secureTextEntry
           />
+          <Input
+            placeholder="access key"
+            suffix={
+              <MaterialCommunityIcons
+                name="form-textbox-password"
+                size={24}
+                color="#a0aec0"
+              />
+            }
+            value={Accesskey}
+            onBlur={() => {
+              setblur(1);
+            }}
+            onFocus={() => {
+              setblur(0.1);
+            }}
+            onChangeText={(text) => setAccesskey(text)}
+            style={styles.input}
+            secureTextEntry
+          />
         </View>
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            onPress={handleSignUp}
+            onPress={() => {
+              if (Accesskey == `#LUCKYISGOODBOY`) {
+                handleSignUp();
+              } else {
+                alert("wrong...! access key");
+              }
+            }}
             style={[styles.button, styles.buttonOutline]}
           >
             <Text style={styles.buttonOutlineText}>Register</Text>
@@ -429,9 +456,19 @@ function SigninScreen({ navigation }) {
           >
             <Text style={styles.buttonText}>Sign in with google</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
-            <Text fontWeight="bold" mr="sm" color="#718096" mt="md">
-              Forgot Password
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("Main");
+            }}
+            style={{ marginTop: "5%", flexDirection: "row" }}
+          >
+            <Ionicons
+              name="arrow-back-circle-outline"
+              size={30}
+              color="black"
+            />
+            <Text fontWeight="bold" mr="sm" color="#718096">
+              {""} go back
             </Text>
           </TouchableOpacity>
           <TouchableOpacity

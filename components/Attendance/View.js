@@ -44,32 +44,21 @@ import {
   Toggle,
 } from "react-native-magnus";
 
-function StudentScreen({ route, navigation }) {
+function StudentScreen({ navigation, route }) {
   const [data, setdata] = useState([]);
+  const [adata, setadata] = useState([]);
   const [id, setid] = useState("");
 
-  console.log(route.params);
-
-  React.useEffect(() => {
-    const unsubscribe = navigation.addListener("tabPress", (e) => {
-      // Prevent default behavior
-      e.preventDefault();
-
-      alert("Default behavior prevented");
-      // Do something manually
-      // ...
-    });
-
-    return unsubscribe;
-  }, [navigation]);
-
+  //console.log(route.params.id);
   let Data = [];
+  let aData = [];
+  const dropdownRef = React.createRef();
 
   useEffect(() => {
     Attendance.onSnapshot((querySnapshot) => {
       querySnapshot.forEach((res) => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
-          if (res.data().uid == user.uid) {
+          if (res.id == route.params.id) {
             setdata(JSON.stringify(res.data().Student));
             setid(res.id);
           }
@@ -79,87 +68,84 @@ function StudentScreen({ route, navigation }) {
   }, []);
 
   return (
-    <View style={{ flex: 1, alignItems: "center", marginTop: 10 }}>
-      {eval(data).legnth != 0
-        ? eval(data).map((i) => (
-            <Div
-              w={"95%"}
-              bg="gray200"
-              mt="lg"
-              justifyContent="space-between"
-              row
-            >
-              <Div ml="md" row>
+    <>
+      <View style={{ flex: 1, alignItems: "center", marginTop: 10 }}>
+        <ScrollView>
+          {eval(data).legnth != 0
+            ? eval(data).map((i) => (
                 <Div
-                  w={60}
-                  h={60}
-                  bg="gray500"
-                  rounded="circle"
-                  justifyContent="center"
-                  alignItems="center"
+                  w={"80%"}
+                  bg="gray200"
+                  mt="lg"
+                  justifyContent="space-between"
+                  row
                 >
-                  <AntDesign name="user" size={24} color="white" />
+                  <Div ml="md" row>
+                    <Div
+                      w={60}
+                      h={60}
+                      bg="gray500"
+                      rounded="circle"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
+                      <AntDesign name="user" size={24} color="white" />
+                    </Div>
+                    <Text
+                      fontWeight="bold"
+                      color="gray600"
+                      ml="lg"
+                      fontSize="xl"
+                    >
+                      {" "}
+                      Roll number <Text fontSize="xl">{i.Roll}</Text>
+                      {"\n"}
+                      <Text mt="lg">
+                        <AntDesign name="user" size={15} color="black" />{" "}
+                        Present:{" "}
+                        <Text color="gray600" fontWeight="bold">
+                          {i.Present}
+                        </Text>{" "}
+                      </Text>{" "}
+                      <Text>
+                        <AntDesign name="deleteuser" size={15} color="black" />{" "}
+                        absent:{" "}
+                        <Text color="gray600" fontWeight="bold">
+                          {i.absent}
+                        </Text>{" "}
+                      </Text>{" "}
+                    </Text>
+                  </Div>
+                  <Div justifyContent="space-between">
+                    <Text fontWeight="bold" color="gray600" fontSize="lg">
+                      Attendance{" "}
+                    </Text>
+                    <Text fontWeight="bold" fontSize="md">
+                      {"\t"}
+                      {i.attendance.toFixed(2)}%
+                    </Text>
+                  </Div>
                 </Div>
-                <Text fontWeight="bold" color="gray600" ml="lg" fontSize="xl">
-                  {" "}
-                  Roll number <Text fontSize="xl">{i.Roll}</Text>
-                  {"\n"}
-                  <Text mt="lg">
-                    <AntDesign name="user" size={15} color="black" /> Present:{" "}
-                    <Text color="gray600" fontWeight="bold">
-                      {i.Present}
-                    </Text>{" "}
-                  </Text>{" "}
-                  <Text>
-                    <AntDesign name="deleteuser" size={15} color="black" />{" "}
-                    absent:{" "}
-                    <Text color="gray600" fontWeight="bold">
-                      {i.absent}
-                    </Text>{" "}
-                  </Text>{" "}
-                </Text>
-              </Div>
-              <Div justifyContent="center" h={"100%"} row>
-                <Text fontWeight="bold" color="gray600" fontSize="lg">
-                  Attendance{" "}
-                </Text>
-                <Text fontWeight="bold" fontSize="xl">
-                  {"\t"}
-                  {i.attendance.toFixed(2)}%
-                </Text>
-              </Div>
-            </Div>
-          ))
-        : null}
-    </View>
+              ))
+            : null}
+        </ScrollView>
+      </View>
+    </>
   );
 }
 
-const ClassData = (props) => {
+function ClassScreen({ navigation, route }) {
   const [data, setdata] = useState([]);
-  return <Text>{props.name}</Text>;
-};
-
-function ClassScreen() {
-  const [data, setdata] = useState([{}, {}]);
 
   useEffect(() => {
     let Data = [];
-    Attendance.onSnapshot((querySnapshot) => {
-      querySnapshot.forEach((res) => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-          if (res.data().uid == user.uid) {
-            ClassAttendance.onSnapshot((querySnapshot) => {
-              querySnapshot.forEach((item) => {
-                if (item.data().uid == res.id) {
-                  Data.push(item.data());
-                }
-              });
-              setdata(Data);
-            });
-          }
-        });
+    ClassAttendance.onSnapshot((querySnapshot) => {
+      querySnapshot.forEach((item) => {
+        if (item.id == route.params.id) {
+          Data.push(item.data());
+        }
       });
+      setdata(Data);
     });
   }, []);
 
@@ -224,11 +210,27 @@ function ClassScreen() {
 
 const Tab = createMaterialTopTabNavigator();
 
-export default function ({ navigation }) {
+export default function ({ route, navigation }) {
+  //console.log(route.params);
   return (
     <Tab.Navigator>
-      <Tab.Screen name="Student" component={StudentScreen} />
-      <Tab.Screen name="Class" component={ClassScreen} />
+      <Tab.Screen
+        name="Student"
+        component={StudentScreen}
+        initialParams={{ id: route.params.id }}
+      ></Tab.Screen>
+      <Tab.Screen
+        name="Class"
+        component={ClassScreen}
+        initialParams={{ id: route.params.id }}
+      ></Tab.Screen>
     </Tab.Navigator>
   );
+}
+
+{
+  /* <Tab.Navigator>
+      <Tab.Screen name="Student" component={StudentScreen} data={route.params} />
+      <Tab.Screen name="Class" component={ClassScreen} />
+    </Tab.Navigator>*/
 }

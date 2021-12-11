@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useCallback, useContext } from "react";
+import { LogBox } from "react-native";
+LogBox.ignoreLogs(["Warning: ..."]); // Ignore log notification by message
+LogBox.ignoreAllLogs(); //Ignore all log notifications
 import {
   View,
   StyleSheet,
@@ -43,16 +46,12 @@ import {
   FontAwesome,
   Entypo,
 } from "@expo/vector-icons";
-import attendanceicon from "./components/attendance.svg";
+
 import { auth, storage, User, Timetableuser, Users } from "./firebase";
 
-//Backend api ...
-import GetData from "./Backend/GetData";
-
 //screeens...
-import TimetableScreen from "./components/Timetable";
+import TimetableScreen from "./components/TimeTable/main";
 import NoticeScreen from "./components/Notice";
-import XeroxScreen from "./components/Xerox";
 import MainScreen from "./components/Auth/Main";
 import LoginScreen from "./components/Auth/Login";
 import Svg, { Circle, SvgUri } from "react-native-svg";
@@ -107,6 +106,7 @@ function HomeScreen({ route, navigation }) {
   const [TimetableData, setTimetableData] = useState([]);
   const [branch, setbranch] = useState();
   const sheetRef = React.useRef(null);
+  const [refreshing, setRefreshing] = React.useState(false);
 
   const [data, setdata] = useState([
     {
@@ -123,13 +123,8 @@ function HomeScreen({ route, navigation }) {
     {
       name: "Timetable",
       path: "Timetable",
-      path1: "home",
+      path1: "create",
       link: "https://img.icons8.com/cotton/64/4a90e2/overtime--v1.png",
-    },
-    {
-      name: "Xerox center",
-      path: "",
-      link: "https://img.icons8.com/wired/64/4a90e2/scanner.png",
     },
   ]);
   const [option, setoption] = useState([
@@ -159,12 +154,20 @@ function HomeScreen({ route, navigation }) {
     },
   ]);
   const TData = [];
+  const Branch = [];
+
   const getTiemtabledata = () => {
     Timetableuser.onSnapshot((querySnapshot) => {
       querySnapshot.forEach((res) => {
         TData.push({ Data: res.data(), id: res.id });
       });
       setdoremon(TData);
+      if (branch) {
+        if (doremon.length != 0) {
+          setLocal(doremon.filter((u) => u.Branch == branch)[0].Data);
+        }
+      }
+      setRefreshing(false);
     });
     return TData;
   };
@@ -221,6 +224,18 @@ function HomeScreen({ route, navigation }) {
       currentTime.getTime() >= startTime.getTime() &&
       currentTime.getTime() <= endTime.getTime()
     ) {
+      setTimeout(() => {
+        setivedata();
+        doremon.map((i) => {
+          i.Data.map((j) => {
+            if (j.day == Days[new Date().getDay() - 1]) {
+              j.items.map((item) => {
+                item["state"] = "offline";
+              });
+            }
+          });
+        });
+      }, endTime.getTime() - currentTime.getTime());
       return (status = "online");
     }
 
@@ -297,8 +312,10 @@ function HomeScreen({ route, navigation }) {
       const unsubscribe = auth.onAuthStateChanged((user) => {
         Users.onSnapshot((querySnapshot) => {
           querySnapshot.forEach((res) => {
-            if (user.uid == res.id) {
-              setuser(res.data());
+            if (user.uid) {
+              if (user.uid == res.id) {
+                setuser(res.data());
+              }
             }
           });
         });
@@ -362,7 +379,7 @@ function HomeScreen({ route, navigation }) {
     auth
       .signOut()
       .then(() => {
-        navigation.replace("Login");
+        navigation.replace("Main");
       })
       .catch((error) => alert(error.message));
   };
@@ -852,20 +869,24 @@ function App() {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
+          name="Main"
+          component={MainScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="Login"
           component={LoginScreen}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="Timetable"
+          component={TimetableScreen}
+          options={{ headerShown: false }}
+        ></Stack.Screen>
 
         <Stack.Screen
           name="Attendance"
           component={AttendanceScreen}
-          options={{ headerShown: false }}
-        />
-
-        <Stack.Screen
-          name="Main"
-          component={MainScreen}
           options={{ headerShown: false }}
         />
 
@@ -878,35 +899,6 @@ function App() {
         <Stack.Screen
           name="Notice"
           component={NoticeScreen}
-          options={{ headerShown: false }}
-        ></Stack.Screen>
-
-        <Stack.Screen
-          name="Xerox"
-          component={XeroxScreen}
-          options={{
-            title: "   Xerox center",
-            headerLeft: (navigation) => (
-              <Button
-                bg="#e6fffa"
-                h={40}
-                w={40}
-                rounded="circle"
-                ml="md"
-                p={0}
-                onPress={(navigation) => {
-                  navigation.goBack();
-                }}
-              >
-                <AntDesign name="arrowleft" size={24} color="black" />
-              </Button>
-            ),
-          }}
-        />
-
-        <Stack.Screen
-          name="Timetable"
-          component={TimetableScreen}
           options={{ headerShown: false }}
         ></Stack.Screen>
       </Stack.Navigator>
