@@ -337,6 +337,7 @@ function DetailsScreen({ navigation }) {
   return (
     <>
       <SafeAreaView style={{ backgroundColor: "#4299e1", height: "4%" }} />
+
       <ScrollView
         contentContainerStyle={styles.scrollView}
         refreshControl={
@@ -384,7 +385,6 @@ function DetailsScreen({ navigation }) {
 
             <Text
               style={{
-                fontFamily: "Montserrat",
                 fontSize: 25,
                 color: "white",
               }}
@@ -955,6 +955,23 @@ function DetailsScreen({ navigation }) {
         ) : null}
       </ScrollView>
 
+      {!branch ? (
+        <Div
+          position="absolute"
+          top={"80%"}
+          left={"50%"}
+          w={"50%"}
+          rounded="xl"
+          h={100}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Text fontWeight="bold" color="gray600" fontSize={"xl"}>
+            select the branch to view your time table info
+          </Text>
+        </Div>
+      ) : null}
+
       <Fab
         bg="#edf2f7"
         color="black"
@@ -1336,7 +1353,7 @@ function HomeScreen({ route, navigation }) {
 
   useEffect(() => {
     getalldata();
-    //console.log(route.params.data[0].Branch)
+
     if (route.params) {
       if (route.params.data[0]) {
         setMonday(route.params.data[0].Data[0].items);

@@ -1,7 +1,13 @@
 import * as firebase from "firebase";
 
 const firebaseConfig = {
-  /* enter youre fire base config*/
+  apiKey: "AIzaSyANR34rHe_H9uLf8NDg6LCPyUCybXo581k",
+  authDomain: "eco-signal-327516.firebaseapp.com",
+  databaseURL: "https://eco-signal-327516-default-rtdb.firebaseio.com",
+  projectId: "eco-signal-327516",
+  storageBucket: "eco-signal-327516.appspot.com",
+  messagingSenderId: "1078242764328",
+  appId: "1:1078242764328:web:a3351c617e072c4ba1b71d",
 };
 
 // Initialize Firebase

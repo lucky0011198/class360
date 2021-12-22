@@ -616,12 +616,7 @@ export default function ({ route, navigation }) {
               </View>
             ))}
           </ScrollView>
-        ) : (
-          <Image
-            style={{ width: 300, height: 300 }}
-            source={require("../assets/wellcom.png")}
-          />
-        )}
+        ) : null}
       </ScrollView>
 
       <Fab
