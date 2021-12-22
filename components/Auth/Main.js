@@ -71,41 +71,55 @@ function HomeScreen({ navigation }) {
   return (
     <>
       <View style={styles.container}>
-        <Text style={styles.Title}>Select Role</Text>
-        <Text style={styles.paragraph}>Select your role in this app </Text>
+        <Image
+          style={{ width: 300, height: 300 }}
+          source={require("../../assets/wellcom.png")}
+        />
+        <Text style={styles.Title}>Select your Role</Text>
+
         {[
-          { name: "Admin (Teachers)", path: "Login" },
-          { name: "Timetable (Student)", path: "Timetableview" },
-          { name: "Notice (Student)", path: "Notice" },
+          {
+            name: "Admin",
+            path: "Login",
+            text: "Login available only for Teachers",
+            icon: "person",
+          },
+          {
+            name: "Timetable ",
+            path: "Timetableview",
+            text: "Time-table for Students  ",
+            icon: "md-time-outline",
+          },
+          {
+            name: "Notice",
+            path: "Notice",
+            text: "Notice for Students",
+            icon: "notifications",
+          },
         ].map((i) => (
           <Div
             h="10%"
             w="100%"
             bg="#e6fffa"
             rounded="xl"
-            mt="lg"
+            mt="xl"
             justifyContent="space-between"
             row
           >
             <Div justifyContent="center" ml="lg" row>
               <Div h="100%" justifyContent="center">
                 <Button bg="#81e6d9" h={50} w={50} rounded="xl" mr="xs" p={0}>
-                  <AntDesign
-                    name="user"
-                    size={24}
-                    fontWeight="bold"
-                    color="white"
-                  />
+                  <Ionicons name={i.icon} size={24} color="white" />
                 </Button>
               </Div>
               <Text fontSize="xl" fontWeight="bold">
-                {"\t"} {"\t"}
+                {"\t"}
                 {i.name}
                 {"\n"}
-                <Text fontSize="xs">
-                  {" "}
+                <Text fontSize="xs" color="gray600">
+                  {"\n"}
                   {"\t"}
-                  {"\t"}This can only view the data
+                  {i.text}
                 </Text>
               </Text>
             </Div>
@@ -156,12 +170,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
     justifyContent: "center",
+    alignItems: "center",
     padding: 24,
   },
   Title: {
-    fontSize: 20,
+    fontSize: 30,
     fontWeight: "bold",
     marginTop: "10%",
+    marginBottom: "10%",
   },
   paragraph: {
     marginTop: 5,

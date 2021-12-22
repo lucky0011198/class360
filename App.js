@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useContext } from "react";
 import { LogBox } from "react-native";
 LogBox.ignoreLogs(["Warning: ..."]); // Ignore log notification by message
-LogBox.ignoreAllLogs(); //Ignore all log notifications
+LogBox.ignoreAllLogs(true); //Ignore all log notifications
 import {
   View,
   StyleSheet,
@@ -11,6 +11,8 @@ import {
   Linking,
   ToastAndroid,
   Clipboard,
+  RefreshControl,
+  FlatList,
 } from "react-native";
 import { useWindowDimensions } from "react-native";
 import Constants from "expo-constants";
@@ -19,7 +21,7 @@ import BottomSheet from "reanimated-bottom-sheet";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Contextdata } from "./components/context";
 import Timetabledata from "./components/context";
-import AttendanceScreen from "./components/Attendance";
+import AttendanceScreen from "./components/Attendance/Home";
 import {
   Div,
   ThemeProvider,
@@ -34,6 +36,7 @@ import {
   Portal,
   Checkbox,
   Text,
+  Tag,
 } from "react-native-magnus";
 
 import {
@@ -55,6 +58,12 @@ import NoticeScreen from "./components/Notice";
 import MainScreen from "./components/Auth/Main";
 import LoginScreen from "./components/Auth/Login";
 import Svg, { Circle, SvgUri } from "react-native-svg";
+import UpdateScreen from "./components/Attendance/update";
+import StudentScreen from "./components/Attendance/Student";
+import ClassScreen from "./components/Attendance/Class";
+import ViewScreen from "./components/Attendance/View";
+import TempletScreen from "./components/Attendance/Templet";
+import CreateScreen from "./components/Attendance/Create";
 
 const OpenURLButton = ({ url, children }) => {
   const handlePress = useCallback(async () => {
@@ -106,25 +115,43 @@ function HomeScreen({ route, navigation }) {
   const [TimetableData, setTimetableData] = useState([]);
   const [branch, setbranch] = useState();
   const sheetRef = React.useRef(null);
+  const [notice, setnotice] = useState([]);
   const [refreshing, setRefreshing] = React.useState(false);
+
+  function multiDimensionalUnique(arr) {
+    var uniques = [];
+    var itemsFound = {};
+    for (var i = 0, l = arr.length; i < l; i++) {
+      var stringified = JSON.stringify(arr[i]);
+      if (itemsFound[stringified]) {
+        continue;
+      }
+      uniques.push(arr[i]);
+      itemsFound[stringified] = true;
+    }
+    return uniques;
+  }
 
   const [data, setdata] = useState([
     {
       name: "Attendance",
       path: "Attendance",
       link: "https://img.icons8.com/cotton/128/4a90e2/multi-edit.png",
+      text: "Create , Delete and Update Attendance here.  ",
     },
     {
       name: "Notice",
       path: "Notice",
       path1: "Edite",
       link: "https://img.icons8.com/cotton/128/4a90e2/notice--v1.png",
+      text: "Create , Delete and Update notices here",
     },
     {
       name: "Timetable",
       path: "Timetable",
       path1: "create",
       link: "https://img.icons8.com/cotton/64/4a90e2/overtime--v1.png",
+      text: "Create , Delete and Update Timetable here",
     },
   ]);
   const [option, setoption] = useState([
@@ -312,10 +339,12 @@ function HomeScreen({ route, navigation }) {
       const unsubscribe = auth.onAuthStateChanged((user) => {
         Users.onSnapshot((querySnapshot) => {
           querySnapshot.forEach((res) => {
-            if (user.uid) {
+            try {
               if (user.uid == res.id) {
                 setuser(res.data());
               }
+            } catch (e) {
+              console.log(e);
             }
           });
         });
@@ -323,57 +352,116 @@ function HomeScreen({ route, navigation }) {
     }
   };
 
-  useEffect(() => {
-    setivedata();
-    getTiemtabledata();
-    getuser();
-  }, []);
-
-  const renderContent = () => (
-    <View
-      style={{
-        backgroundColor: "white",
-        height: 500,
-        flexDirection: "row",
-        flexWrap: "wrap",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      {option.map((n) => (
-        <View
-          style={{
-            marginTop: "7%",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Button
-            bg="white"
-            borderless
-            h={100}
-            w={100}
-            rounded="circle"
-            alignSelf="center"
-            onPress={() => {
-              navigation.navigate(`${n.title}`);
-            }}
-          >
-            <Image
-              source={{
-                uri: n.link,
+  const loaddata = () => {
+    let temp = [];
+    setRefreshing(true);
+    User.onSnapshot((querySnapshot) => {
+      querySnapshot.forEach((res) => {
+        temp.push({ Data: res.data(), id: res.id });
+      });
+      setnotice(temp);
+      setRefreshing(false);
+    });
+  };
+  const renderItem = ({ item }) => {
+    return (
+      <Div
+        w={width - 20}
+        borderRadius={10}
+        shadow="md"
+        ml="2.5%"
+        mt="lg"
+        mb="xl"
+        backgroundColor={item.Data.Color}
+      >
+        <Div justifyContent="space-between" flexWrap="wrap" w="98%" row>
+          <Div m="md" row>
+            <Button
+              bg={item.Data.Color == "#ffff" ? "#fed7d7" : "#ffff"}
+              h={30}
+              w={30}
+              p={0}
+              rounded="circle"
+              onPress={() => {
+                const dbRef = User.doc(item.id);
+                dbRef.delete().then((res) => {
+                  alert("Item removed from database");
+                });
               }}
-              style={{ width: 50, height: 50 }}
-            />
+            >
+              <AntDesign name="delete" size={15} color="black" />
+            </Button>
+          </Div>
+          <Button
+            px="lg"
+            py="xs"
+            mt="lg"
+            bg="#e6fffa"
+            rounded="circle"
+            color="black"
+            prefix={<AntDesign name="warning" size={15} color="#4fd1c5" />}
+            shadow={2}
+          >
+            <Text fontWeight="bold" color="black">
+              {"\t"}
+              {item.Data.Type}
+            </Text>
           </Button>
-          <Text color="#4c51bf" fontSize="xs" mt={5} ml={2}>
-            {" "}
-            {n.title}
+        </Div>
+        <Div justifyContent="space-between" mt="lg" ml="lg" mr="lg" row>
+          <Text fontWeight="bold" fontSize="xl">
+            {item.Data.Title}{" "}
           </Text>
-        </View>
-      ))}
-    </View>
-  );
+        </Div>
+        <Text mt="xs" m="lg" color="gray700">
+          {item.Data.Content}
+        </Text>
+
+        <Div flexWrap="wrap" row>
+          {item.Data.Lables.map((k) => (
+            <Tag
+              bg={item.Data.Color == "#ffff" ? "#b2f5ea" : "#ffff"}
+              mt={"md"}
+              ml="2%"
+              prefix={<Feather name="git-branch" size={15} color="black" />}
+            >
+              <Text>
+                {"\t"}
+                {k.Lable}
+              </Text>
+            </Tag>
+          ))}
+        </Div>
+
+        {typeof item.Data.Files != "undefined" ? (
+          <Div flexWrap="wrap" row>
+            {item.Data.Files.map((j) => (
+              <Tag
+                bg={item.Data.Color == "#ffff" ? "#b2f5ea" : "#ffff"}
+                mt={"md"}
+                ml="2%"
+                mb="lg"
+                onPress={() => {
+                  WebBrowser.openBrowserAsync(j.url);
+                }}
+                prefix={<AntDesign name="filetext1" size={15} color="black" />}
+              >
+                <Text>
+                  {"\t"}
+                  {j.Name}
+                </Text>
+              </Tag>
+            ))}
+          </Div>
+        ) : null}
+      </Div>
+    );
+  };
+
+  useEffect(() => {
+    getuser();
+    loaddata();
+  }, []);
 
   const handleSignOut = () => {
     auth
@@ -438,7 +526,7 @@ function HomeScreen({ route, navigation }) {
               color="white"
               shadow={2}
             >
-              Profile
+              Teacher
             </Button>
           </View>
           <Div>
@@ -516,8 +604,7 @@ function HomeScreen({ route, navigation }) {
                       }}
                     >
                       <Text fontSize="xs" color="gray700" ml="lg" mt="xs">
-                        Lorem ipsum, dolor sit amet consectetur adipisicing
-                        elit. Culpa
+                        {n.text}
                       </Text>
                     </View>
                     <View
@@ -612,7 +699,58 @@ function HomeScreen({ route, navigation }) {
             ))}
           </ScrollView>
         </View>
-        <Div mt="xl">
+        <View style={{ height: "23%", marginTop: "2%" }}>
+          <Div ml="lg" row>
+            <Feather name="bell" size={24} color="#4a5568" />
+            <Text ml="md" fontWeight="bold" fontSize="xl" color="#4a5568">
+              Notice board
+            </Text>
+            <Div
+              h={20}
+              w={20}
+              bg="gray300"
+              rounded={"md"}
+              ml="sm"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Text fontWeight="bold" color="gray700">
+                {notice.length}
+              </Text>
+            </Div>
+          </Div>
+          <View style={{ height: 250, marginTop: "2%" }}>
+            {notice.length != 0 ? (
+              <FlatList
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={loaddata}
+                  />
+                }
+                data={multiDimensionalUnique(notice)}
+                showsHorizontalScrollIndicator={false}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id}
+                style={{ marginBottom: "5%", width: width }}
+              />
+            ) : (
+              <Image
+                style={{ width: 250, height: 250 }}
+                source={require("./assets/empty.png")}
+              />
+            )}
+          </View>
+          {/*notice.length != 0 ? (
+              <FlatList
+                data={multiDimensionalUnique(notice)}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id}
+                style={{ width: width - 20, marginBottom: "5%" }}
+              />
+            ) : null*/}
+        </View>
+        {/* <Div mt="xl">
           <Div row>
             <Text fontSize="xl" fontWeight="bold" color="black" ml="lg" mb="md">
               <Ionicons name="today-outline" size={20} color="#4299e1" />
@@ -809,7 +947,7 @@ function HomeScreen({ route, navigation }) {
               </View>
             </View>
           )}
-        </Div>
+        </Div> */}
 
         <View
           style={{
@@ -823,7 +961,7 @@ function HomeScreen({ route, navigation }) {
             borderRadius: 20,
           }}
         >
-          <Button mt={"5%"} h={45} w={50} rounded="md">
+          <Button mt={"5%"} h={45} w={50} rounded="md" p={0}>
             <AntDesign name="home" size={24} color="white" />
           </Button>
           <Button
@@ -834,11 +972,12 @@ function HomeScreen({ route, navigation }) {
             rounded="md"
             ml="md"
             onPress={() => sheetRef.current.snapTo(1)}
+            p={0}
+            onPress={() => {
+              navigation.navigate("Attendance");
+            }}
           >
-            <AntDesign name="upcircleo" size={24} color="#4a5568" />
-          </Button>
-          <Button bg="white" mt={"5%"} h={45} w={50} rounded="md" ml="md">
-            <AntDesign name="user" size={24} color="#4a5568" />
+            <Feather name="edit" size={24} color="#4a5568" />
           </Button>
           <Button
             bg="white"
@@ -847,17 +986,33 @@ function HomeScreen({ route, navigation }) {
             w={50}
             rounded="md"
             ml="md"
-            onPress={getlivelectures}
+            p={0}
+            onPress={() => {
+              navigation.navigate("Timetable");
+            }}
           >
-            <Feather name="settings" size={24} color="#4a5568" />
+            <MaterialCommunityIcons
+              name="timetable"
+              size={24}
+              color="#4a5568"
+            />
+          </Button>
+          <Button
+            bg="white"
+            mt={"5%"}
+            h={45}
+            w={50}
+            rounded="md"
+            ml="md"
+            onPress={() => {
+              navigation.navigate("Notice");
+            }}
+            p={0}
+          >
+            <Feather name="bell" size={24} color="#4a5568" />
           </Button>
         </View>
       </View>
-      <BottomSheet
-        ref={sheetRef}
-        snapPoints={[0, 300, 400, 500]}
-        renderContent={renderContent}
-      />
     </>
   );
 }
@@ -884,11 +1039,7 @@ function App() {
           options={{ headerShown: false }}
         ></Stack.Screen>
 
-        <Stack.Screen
-          name="Attendance"
-          component={AttendanceScreen}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="Attendance" component={AttendanceScreen} />
 
         <Stack.Screen
           name="Home"
@@ -901,6 +1052,41 @@ function App() {
           component={NoticeScreen}
           options={{ headerShown: false }}
         ></Stack.Screen>
+
+        <Stack.Screen
+          name="Create"
+          component={CreateScreen}
+          options={{ title: "Create Attendance" }}
+        />
+        <Stack.Screen
+          name="Update"
+          component={UpdateScreen}
+          options={{ title: "Add Attendance" }}
+        />
+        <Stack.Screen
+          name="View"
+          component={ViewScreen}
+          options={{ title: "Add Attendance" }}
+        />
+        <Stack.Screen
+          name="Templet"
+          component={TempletScreen}
+          options={{ title: "Add Attendance" }}
+        />
+        <Stack.Screen
+          name="Student"
+          component={StudentScreen}
+          options={{
+            title: "Add Attendance",
+          }}
+        />
+        <Stack.Screen
+          name="Class"
+          component={ClassScreen}
+          options={{
+            title: "Add Attendance",
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

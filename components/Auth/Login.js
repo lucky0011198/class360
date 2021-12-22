@@ -128,7 +128,7 @@ function SignupScreen({ navigation }) {
         }}
       >
         <Image
-          style={{ width: 50, height: 50 }}
+          style={{ width: 90, height: 70 }}
           source={require("../../assets/snack-icon.png")}
         />
         <Text fontWeight="bold" fontSize="4xl" mt="md">
@@ -388,7 +388,7 @@ function SigninScreen({ navigation }) {
         }}
       >
         <Image
-          style={{ width: 50, height: 50 }}
+          style={{ width: 90, height: 70 }}
           source={require("../../assets/snack-icon.png")}
         />
         <Text fontWeight="bold" fontSize="4xl" mt="md">

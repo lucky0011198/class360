@@ -73,7 +73,7 @@ import * as DocumentPicker from "expo-document-picker";
 
 import * as firebase from "firebase";
 import { Attendance, auth, ClassAttendance } from "../firebase";
-import ViewScreen from "./Attendance/View";
+// import ViewScreen from "./Attendance/View";
 
 function HomeScreen({ route, navigation }) {
   const [overlayVisible, setOverlayVisible] = useState(false);

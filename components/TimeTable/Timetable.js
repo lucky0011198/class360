@@ -510,7 +510,7 @@ export default function ({ route, navigation }) {
 
                           {n.type && n.Discriptions ? (
                             <Text color="#a0aec0" mt="md" ml="lg" p="xs">
-                              {n.type} conducting by{" "}
+                              {n.type} by{" "}
                               <Text fontWeight="bold" color="#4a5568">
                                 {n.Name}{" "}
                               </Text>
@@ -616,7 +616,12 @@ export default function ({ route, navigation }) {
               </View>
             ))}
           </ScrollView>
-        ) : null}
+        ) : (
+          <Image
+            style={{ width: 300, height: 300 }}
+            source={require("../assets/wellcom.png")}
+          />
+        )}
       </ScrollView>
 
       <Fab

@@ -20,10 +20,11 @@ import {
 
 import Checkbox from "expo-checkbox";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-//import * as firebase from 'firebase';
+import * as firebase from "firebase";
 
 //import * as Linking from 'expo-linking';
 import * as WebBrowser from "expo-web-browser";
+import * as DocumentPicker from "expo-document-picker";
 import { WebView } from "react-native-webview";
 import BottomSheet from "reanimated-bottom-sheet";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -132,21 +133,15 @@ function EditeScreen({ route, navigation }) {
             //backgroundColor: 'blue',
           }}
         >
-          <TouchableHighlight
-            style={{
-              height: "50%",
-              width: "10%",
-              marginTop: "6%",
-              justifyContent: "center",
-              alignItems: "center",
-              marginLeft: 3,
-              borderRadius: 100,
-            }}
-            activeOpacity={0.6}
+          <Button
+            h={40}
+            w={50}
             onPress={() => navigation.goBack()}
+            p={0}
+            bg="transparent"
           >
             <AntDesign name="arrowleft" size={24} color="back" />
-          </TouchableHighlight>
+          </Button>
           <Div mr={5} row>
             {/*<Button
               bg="transparent"
@@ -323,7 +318,7 @@ function EditeScreen({ route, navigation }) {
           {new Date().getMinutes() < 10
             ? "0" + new Date().getMinutes()
             : new Date().getMinutes()}
-          {new Date().getHours() > 12 ? " am" : " pm"}
+          {new Date().getHours() >= 12 ? " pm" : " am"}
         </Text>
         <Button
           ml="md"
@@ -433,7 +428,7 @@ function EditeScreen({ route, navigation }) {
         </Dropdown.Option>
         <Div justifyContent="center" mt="md" alignItems="center">
           <Radio.Group flexWrap="wrap" row>
-            {["alert", "importent", "urgent", "warning"].map((item) => (
+            {["Alert", "Important", "Urgent", "Warning"].map((item) => (
               <Radio
                 value={item}
                 onPress={(value) => {
@@ -471,8 +466,8 @@ function EditeScreen({ route, navigation }) {
                 alignItems: "center",
                 marginLeft: 3,
                 borderRadius: 100,
+                opacity: 0.7,
               }}
-              activeOpacity={0.6}
               onPress={() => {
                 setVisible(false);
               }}
@@ -516,8 +511,8 @@ function EditeScreen({ route, navigation }) {
               disabled={false}
               onAnimationType="fill"
               offAnimationType="fade"
-              value={i.selected}
-              onValueChange={() => {
+              isChecked={i.selected}
+              onPress={() => {
                 const newlist = Lables.map((newitem) => {
                   if (newitem.Lable == i.Lable) {
                     return {
@@ -689,7 +684,12 @@ function HomeScreen({ navigation }) {
               keyExtractor={(item) => item.id}
               style={{ width: "100%", marginBottom: "5%" }}
             />
-          ) : null}
+          ) : (
+            <Image
+              style={{ width: 300, height: 300 }}
+              source={require("../assets/wellcom.png")}
+            />
+          )}
         </Div>
       </ScrollView>
       <View style={styles.inputsection}>
@@ -708,6 +708,40 @@ function UploadefileScreen({ navigation }) {
   const [image, setImage] = useState(null);
   const [Storage, setStorage] = useState([]);
   const [select, setselect] = useState([]);
+  const [file, setfile] = useState([]);
+  const [progress, setProgress] = useState(0);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [overlayVisible, setOverlayVisible] = useState(false);
+
+  const pickDocument = async () => {
+    setRefreshing(true);
+    let result = await DocumentPicker.getDocumentAsync({});
+    const uploadTask = firebase
+      .storage()
+      .ref(`files/img/${result.name}`)
+      .put(result);
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const prog = Math.round(
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        );
+        setProgress(prog);
+      },
+      (error) => console.log(error),
+      () => {
+        firebase
+          .storage()
+          .ref("files/img")
+          .child(result.name)
+          .getDownloadURL()
+          .then((url) => {
+            console.log(url);
+            setRefreshing(false);
+          });
+      }
+    );
+  };
 
   function multiDimensionalUnique(arr) {
     var uniques = [];
@@ -744,15 +778,18 @@ function UploadefileScreen({ navigation }) {
     });
   };
 
+  const Delete = () => {};
+
   useEffect(() => {
     selectfie();
   }, []);
 
   return (
-    <View style={styles.container}>
-      {Storage.length != 0
-        ? multiDimensionalUnique(Storage).map((i) => (
-            <>
+    <>
+      <ScrollView>
+        <View style={styles.container}>
+          {Storage.length != 0 ? (
+            multiDimensionalUnique(Storage).map((i) => (
               <View style={styles.items}>
                 <View
                   style={{
@@ -787,7 +824,19 @@ function UploadefileScreen({ navigation }) {
                     w={40}
                     p={0}
                     onPress={() => {
-                      console.log("yes");
+                      setOverlayVisible(true);
+                      let desertRef = storage.child(i.Name);
+                      desertRef
+                        .delete()
+                        .then(function () {
+                          // File deleted successfully
+                          alert("File Deleted");
+                          setOverlayVisible(false);
+                        })
+                        .catch(function (error) {
+                          // Some Error occurred
+                        });
+                      console.log(desertRef);
                     }}
                   >
                     <AntDesign name="delete" size={20} color="black" />
@@ -809,8 +858,8 @@ function UploadefileScreen({ navigation }) {
                       disabled={false}
                       onAnimationType="fill"
                       offAnimationType="fade"
-                      value={i.selected}
-                      onValueChange={() => {
+                      isChecked={i.selected}
+                      onPress={() => {
                         const newlist = Storage.map((newitem) => {
                           if (newitem.Name == i.Name) {
                             return {
@@ -831,19 +880,53 @@ function UploadefileScreen({ navigation }) {
                   </Div>
                 </Div>
               </View>
-            </>
-          ))
-        : null}
+            ))
+          ) : (
+            <ActivityIndicator size="large" color="#00ff00" />
+          )}
+          <Div row>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("Edite", Storage);
+              }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>submit files</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {}}
+              style={{
+                width: 50,
+                height: 50,
+                justifyContent: "center",
+                alignContent: "center",
 
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate("Edite", Storage);
-        }}
-        style={styles.button}
-      >
-        <Text style={styles.buttonText}>submit files</Text>
-      </TouchableOpacity>
-    </View>
+                borderRadius: 15,
+                marginTop: "9%",
+                marginLeft: "1%",
+              }}
+            >
+              <Button
+                bg="blue200"
+                h={50}
+                w={50}
+                rounded="xl"
+                ml="md"
+                p={0}
+                onPress={pickDocument}
+              >
+                <Feather name="upload" size={24} color="black" />
+              </Button>
+            </TouchableOpacity>
+          </Div>
+        </View>
+
+        <Overlay visible={overlayVisible} p="xl">
+          <ActivityIndicator />
+          <Text mt="md">Loading...</Text>
+        </Overlay>
+      </ScrollView>
+    </>
   );
 }
 
@@ -909,9 +992,10 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   container: {
-    flex: 1,
     marginTop: "3%",
     alignItems: "center",
+
+    height: "100%",
   },
   button: {
     backgroundColor: "#0782F9",
@@ -928,7 +1012,7 @@ const styles = StyleSheet.create({
   },
   items: {
     width: "94%",
-    height: "6%",
+    height: 50,
     justifyContent: "space-between",
 
     marginTop: "2%",

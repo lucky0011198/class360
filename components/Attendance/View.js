@@ -2,7 +2,6 @@ import * as React from "react";
 import { useEffect, useState, useContext, createContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import { Attendance, ClassAttendance, auth } from "../../firebase";
 import { AntDesign } from "@expo/vector-icons";
 
 import {
@@ -44,169 +43,26 @@ import {
   Toggle,
 } from "react-native-magnus";
 
-function StudentScreen({ navigation, route }) {
-  const [data, setdata] = useState([]);
-  const [adata, setadata] = useState([]);
-  const [id, setid] = useState("");
+import StudentScreen from "./Student";
+import ClassScreen from "./Class";
 
-  //console.log(route.params.id);
-  let Data = [];
-  let aData = [];
-  const dropdownRef = React.createRef();
+// function StudentScreen({ navigation, route }) {
+//   const [data, setdata] = useState([]);
+//   const [adata, setadata] = useState([]);
+//   const [id, setid] = useState("");
 
-  useEffect(() => {
-    Attendance.onSnapshot((querySnapshot) => {
-      querySnapshot.forEach((res) => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-          if (res.id == route.params.id) {
-            setdata(JSON.stringify(res.data().Student));
-            setid(res.id);
-          }
-        });
-      });
-    });
-  }, []);
+//   let Data = [];
+//   let aData = [];
+//   const dropdownRef = React.createRef();
 
-  return (
-    <>
-      <View style={{ flex: 1, alignItems: "center", marginTop: 10 }}>
-        <ScrollView>
-          {eval(data).legnth != 0
-            ? eval(data).map((i) => (
-                <Div
-                  w={"80%"}
-                  bg="gray200"
-                  mt="lg"
-                  justifyContent="space-between"
-                  row
-                >
-                  <Div ml="md" row>
-                    <Div
-                      w={60}
-                      h={60}
-                      bg="gray500"
-                      rounded="circle"
-                      justifyContent="center"
-                      alignItems="center"
-                    >
-                      <AntDesign name="user" size={24} color="white" />
-                    </Div>
-                    <Text
-                      fontWeight="bold"
-                      color="gray600"
-                      ml="lg"
-                      fontSize="xl"
-                    >
-                      {" "}
-                      Roll number <Text fontSize="xl">{i.Roll}</Text>
-                      {"\n"}
-                      <Text mt="lg">
-                        <AntDesign name="user" size={15} color="black" />{" "}
-                        Present:{" "}
-                        <Text color="gray600" fontWeight="bold">
-                          {i.Present}
-                        </Text>{" "}
-                      </Text>{" "}
-                      <Text>
-                        <AntDesign name="deleteuser" size={15} color="black" />{" "}
-                        absent:{" "}
-                        <Text color="gray600" fontWeight="bold">
-                          {i.absent}
-                        </Text>{" "}
-                      </Text>{" "}
-                    </Text>
-                  </Div>
-                  <Div justifyContent="space-between">
-                    <Text fontWeight="bold" color="gray600" fontSize="lg">
-                      Attendance{" "}
-                    </Text>
-                    <Text fontWeight="bold" fontSize="md">
-                      {"\t"}
-                      {i.attendance.toFixed(2)}%
-                    </Text>
-                  </Div>
-                </Div>
-              ))
-            : null}
-        </ScrollView>
-      </View>
-    </>
-  );
-}
+//   return <></>;
+// }
 
-function ClassScreen({ navigation, route }) {
-  const [data, setdata] = useState([]);
+// function ClassScreen({ navigation, route }) {
+//   const [data, setdata] = useState([]);
 
-  useEffect(() => {
-    let Data = [];
-    ClassAttendance.onSnapshot((querySnapshot) => {
-      querySnapshot.forEach((item) => {
-        if (item.id == route.params.id) {
-          Data.push(item.data());
-        }
-      });
-      setdata(Data);
-    });
-  }, []);
-
-  return (
-    <View style={{ flex: 1, alignItems: "center", marginTop: 10 }}>
-      {eval(data).legnth != 0
-        ? eval(data).map((i) => (
-            <Div
-              w={"95%"}
-              bg="gray200"
-              mt="lg"
-              justifyContent="space-between"
-              row
-            >
-              <Div ml="md" row>
-                <Div
-                  w={60}
-                  h={60}
-                  bg="gray500"
-                  rounded="circle"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <AntDesign name="user" size={24} color="white" />
-                </Div>
-                <Text fontWeight="bold" color="gray600" ml="lg" fontSize="xl">
-                  {" "}
-                  Class <Text fontSize="md">{i.date}</Text>
-                  {"\n"}
-                  <Text mt="lg">
-                    <AntDesign name="user" size={15} color="black" /> Present:{" "}
-                    <Text color="gray600" fontWeight="bold">
-                      {" "}
-                      {i.Present}
-                    </Text>{" "}
-                  </Text>{" "}
-                  <Text>
-                    <AntDesign name="deleteuser" size={15} color="black" />{" "}
-                    absent:{" "}
-                    <Text color="gray600" fontWeight="bold">
-                      {" "}
-                      {i.Absent}
-                    </Text>{" "}
-                  </Text>{" "}
-                </Text>
-              </Div>
-              <Div justifyContent="center" h={"100%"} row>
-                <Text fontWeight="bold" color="gray600" fontSize="lg">
-                  Attendance{" "}
-                </Text>
-                <Text fontWeight="bold" fontSize="xl">
-                  {"\t"}
-                  {i.ClassAttendance}%
-                </Text>
-              </Div>
-            </Div>
-          ))
-        : null}
-    </View>
-  );
-}
+//   return <View style={{ flex: 1, alignItems: "center", marginTop: 10 }}></View>;
+// }
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -217,12 +73,12 @@ export default function ({ route, navigation }) {
       <Tab.Screen
         name="Student"
         component={StudentScreen}
-        initialParams={{ id: route.params.id }}
+        initialParams={{ id: route.params.id, info: route.params }}
       ></Tab.Screen>
       <Tab.Screen
         name="Class"
         component={ClassScreen}
-        initialParams={{ id: route.params.id }}
+        initialParams={{ id: route.params.id, info: route.params }}
       ></Tab.Screen>
     </Tab.Navigator>
   );
