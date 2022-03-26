@@ -1,3 +1,3 @@
-# class 360 project (final year Project)
+# class 360 (final year Project)
 
 [GitHub repo](https://lucky00189.github.io).
