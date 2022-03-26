@@ -257,6 +257,14 @@ export default function ({ route, navigation }) {
         25,
         50
       );
+    } else {
+      ToastAndroid.showWithGravityAndOffset(
+        "No link found",
+        ToastAndroid.LONG,
+        ToastAndroid.BOTTOM,
+        25,
+        50
+      );
     }
   };
 

@@ -108,7 +108,7 @@ export default function ({ navigation }) {
     let filename = FileSystem.documentDirectory + `${formatted_date}.txt`;
     await FileSystem.writeAsStringAsync(filename, JSON.stringify(data)).then(
       () => {
-        navigation.navigate("Home", true);
+        navigation.navigate("Attendance");
       }
     );
   };

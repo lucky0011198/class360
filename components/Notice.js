@@ -831,6 +831,7 @@ function UploadefileScreen({ navigation }) {
                         .then(function () {
                           // File deleted successfully
                           alert("File Deleted");
+
                           setOverlayVisible(false);
                         })
                         .catch(function (error) {

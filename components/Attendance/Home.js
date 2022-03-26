@@ -400,15 +400,64 @@ export default function ({ route, navigation }) {
             </Div>
           </ScrollView>
         ) : (
-          <Div w={"100%"} h={"100%"}>
-            {/* <LottieView
-              source={require("../../assets/animations/13697-archive.json")}
-              autoPlay={true}
-              loop={false}
-            /> */}
+          <Div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+            }}
+          >
+            <View
+              style={{
+                display: "flex",
+                width: "100%",
+                height: "50%",
+                marginTop: "60%",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <LottieView
+                source={require("./empty.json")}
+                autoPlay={true}
+                loop={false}
+              />
+            </View>
+            <View
+              style={{
+                display: "flex",
+                width: "100%",
+                height: 600,
+              }}
+            >
+              <Button
+                w={100}
+                ml={"37%"}
+                onPress={() => {
+                  read();
+                }}
+              >
+                refresh
+              </Button>
+            </View>
           </Div>
         )
-      ) : null}
+      ) : (
+        <View
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: 500,
+            width: "100%",
+          }}
+        >
+          <Text>no internet</Text>
+        </View>
+      )}
 
       {/* attendance dashboard */}
       {/* create attendance ,.... */}
